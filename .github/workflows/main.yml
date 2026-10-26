@@ -5,22 +5,36 @@ on:
       package:
         description: 'Package name (например: com.mojang.minecraftpe)'
         required: true
-        default: 'com.args.Mel'
+        default: 'com.game.name'
+
+permissions:
+  contents: read
 
 jobs:
   build:
     runs-on: ubuntu-latest
     steps:
-      - uses: actions/checkout@v4
-      - name: set up JDK 17
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Set up JDK 17
         uses: actions/setup-java@v4
         with:
           java-version: '17'
           distribution: 'temurin'
+
+      - name: Setup Gradle
+        uses: gradle/actions/setup-gradle@v3
+
+      - name: Grant execute permission for gradlew
+        run: chmod +x gradlew
+
       - name: Build with Gradle
         run: ./gradlew :module:assembleRelease -PpackageName=${{ github.event.inputs.package }}
+
       - name: Upload Artifact
         uses: actions/upload-artifact@v4
         with:
           name: Zygisk-Il2CppDumper
           path: module/build/outputs/zip/release/*.zip
+          if-no-files-found: error
