@@ -3,9 +3,9 @@ on:
   workflow_dispatch:
     inputs:
       package:
-        description: 'Package name (например: com.mojang.minecraftpe)'
+        description: 'Package name (например: com.memphis.standarling)'
         required: true
-        default: 'com.game.name'
+        default: 'com.memphis.standarling'
 
 permissions:
   contents: read
@@ -32,9 +32,16 @@ jobs:
       - name: Build with Gradle
         run: ./gradlew :module:assembleRelease -PpackageName=${{ github.event.inputs.package }}
 
+      # Ищем собранный zip везде, где он может оказаться, и копируем в одну папку
+      - name: Find and prepare zip
+        run: |
+          mkdir -p final_artifact
+          find . -name "*.zip" -exec cp {} final_artifact/ \;
+          ls -la final_artifact/
+
       - name: Upload Artifact
         uses: actions/upload-artifact@v4
         with:
-          name: Zygisk-Il2CppDumper
-          path: module/build/outputs/zip/release/*.zip
+          name: Zygisk-Il2CppDumper-${{ github.event.inputs.package }}
+          path: final_artifact/*.zip
           if-no-files-found: error
